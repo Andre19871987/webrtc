@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>WebRTC-Connecting Clients Together</title>
+    <style>
+        body {
+            background-image: url('https://img-16.ccm2.net/lbJgPlFe-hn89t0gME15b5ipxJ0=/850x/8fddb577bb794284aee05b9068cbdb12/ccm-faq/simon-matzinger-twukN12EN7c-unsplash.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            font-family: cursive;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 90%;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            h2 {
+                font-size: 24px;
+                text-align: center;
+            }
+        }
+
+        #video-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        video {
+            background: black;
+            border: 5px solid rgb(150, 61, 72);
+            border-radius: 50px 0px 50px 0px;
+            width: 45%;
+            margin: 5px;
+        }
+
+        #share-page {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 30%;
+            max-height: 80%;
+            overflow-y: auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        #file-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        #fileName,
+        #ready,
+        #status {
+            flex: 1;
+            text-align: center;
+        }
+
+        #call-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        #received {
+            width: 100%;
+            height: 100px;
+            background: white;
+            padding: 10px;
+            margin-top: 10px;
+            color: black;
+            overflow: scroll;
+        }
+
+        button {
+            font-family: cursive;
+            background-color: hwb(353 24% 41%);
+            color: white;
+            border-color: black;
+            border-radius: 50px;
+            padding: 1px 50px;
+            cursor: grab;
+            margin-top: 10px;
+            transition: transform 0.3s;
+        }
+
+        #sendFile {
+            background-color: hwb(353 24% 41%);
+            color: white;
+            border-color: black;
+            border-radius: 50px;
+            padding: 1px 50px;
+            cursor: grab;
+            margin-top: 10px;
+            transition: transform 0.3s;
+        }
+
+        #sendFile:hover {
+            background-color: hwb(353 24% 41%);
+            transform: scale(1.1);
+        }
+
+        #call-page,
+        #share-page {
+            display: none;
+        }
+
+        #byte_content {
+            margin: 5px 0;
+            max-height: 100px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #byte_range {
+            margin-top: 5px;
+        }
+
+        .right-button {
+            float: right;
+        }
+        #message {
+    margin-right: 410px
+}
+
+    </style>
+</head>
+
+<body>
+    <div id="login-page" class="page">
+        <marquee behavior="alternate" direction="right" style="font-size: 24px;">WebRTC</marquee>
+        <input type="text" id="username" />
+        <button id="login">Login</button>
+    </div>
+    <div id="share-page" style="margin-right: 200px;" class="page">
+
+        <h2>File Sharing</h2>
+        <div id="fileName">File Name</div>
+        <div id="ready">Ready</div>
+        <div id="status">Progress</div>
+        <br />
+        <br />
+        <input type="file" id="files" name="file" /> Read bytes:
+        <button id="sendFile">Send</button>
+    </div>
+    <div id="call-page" class="page">
+        <div id="video-container">
+            <video id="yours" autoplay="true" playsinline="true" muted="muted"></video>
+            <video id="theirs" autoplay="true" playsinline="true"></video>
+        </div>
+        <input type="text" id="message"placeholder="Type your message" />
+        <select id="emoticons">
+            <option value="">emoticon</option>
+            <option value="😀">😀</option>
+            <option value="😂">😂</option>
+            <option value="😊">😊</option>
+            <option value="👍">👍</option>
+            <option value="❤️">❤️</option>
+            <option value="🙌">🙌</option>
+            <option value="😎">😎</option>
+            <option value="🥳">🥳</option>
+            <option value="💪">💪</option>
+            <option value="🌟">🌟</option>
+            <option value="😈">😈</option>
+            <option value="😉">😉</option>
+            <option value="😋">😋</option>
+            <option value="😌">😌</option>
+            <option value="😕">😕</option>
+            <option value="😖">😖</option>
+            <option value="😘">😘</option>
+            <option value="😛">😛</option>
+            <option value="😤">😤</option>
+            <option value="🤡">🤡</option>
+            <option value="🤮">🤮</option>
+        </select>
+        <button class="right-button" id="share-button">Share</button>
+        <button id="send">Send</button>
+        <div id="received"></div>
+        <input type="text" id="their-username" style="margin-right: 500px"placeholder="Their Username" />
+        <button id="call">Call</button>
+        <button id="hang-up">Hang Up</button>
+    </div>
+    <script src="client.js"></script>
+</body>
+
+</html>
